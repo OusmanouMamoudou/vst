@@ -153,6 +153,8 @@ class Datas extends ChangeNotifier {
         '${nextPageToken != null ? '&pageToken=$nextPageToken' : ''}',
       ).getData();
 
+      print("icccccc $data");
+
       // Traitement des données récupérées
       if (data != null && data.containsKey('items')) {
         videos.clear(); // Nettoyage de la liste de vidéos
@@ -187,9 +189,7 @@ class Datas extends ChangeNotifier {
   }
 
   // Liste de vidéos YouTube préchargées (à des fins de démonstration)
-  List<Youtube> videosViews = [];
-
-  List<Youtube> machineLearningVidoes = [
+  List<Youtube> videosViews = [
     Youtube(
       title:
           "Et si l'intelligence n'avait pas évolué ? Elle était là depuis le début !",
