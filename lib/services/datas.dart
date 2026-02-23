@@ -13,6 +13,9 @@ class Datas extends ChangeNotifier {
       isNlp = false,
       isComputerVision = false;
 
+  // articleQuery pour pouvoir acceder à ça de partout
+  String articleQuery = "machine%20learning";
+
   // Fonctions pour filtrer les articles par différentes catégories
   void forMostViewed() {
     isMostViewed = true;
@@ -99,7 +102,7 @@ class Datas extends ChangeNotifier {
   List<Article> articles = [];
   Future<void> fetchArticles() async {
     // Définition de la requête en fonction du filtre sélectionné
-    String articleQuery = "machine%20learning";
+
     if (isGenerativeIa) {
       articleQuery = "generative%20artificial%20intelligence";
     } else if (isNlp) {
@@ -146,7 +149,7 @@ class Datas extends ChangeNotifier {
     for (int page = 0; page < maxPages; page++) {
       final data = await NetworkHelper(
         // Requête pour récupérer les vidéos
-        'https://youtube.googleapis.com/youtube/v3/search?part=snippet&order=$order&q=web%20development&key=$youtubeApiKey'
+        'https://youtube.googleapis.com/youtube/v3/search?part=snippet&order=$order&q=$articleQuery&key=$youtubeApiKey'
         '${nextPageToken != null ? '&pageToken=$nextPageToken' : ''}',
       ).getData();
 
