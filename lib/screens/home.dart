@@ -18,24 +18,90 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int page = 0;
+  bool searchClicked = false;
+  String text = "";
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     double height = size.height;
+    final controleur = TextEditingController();
 
     return Consumer<Datas>(
       builder: (context, datas, child) {
         return Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            title: AppBarTitle(
-              height: height,
-            ), // Utilisation du composant AppBarTitle pour afficher le titre de l'application
-          ),
+          appBar: searchClicked
+              ? AppBar(
+                  title: TextFormField(
+                    controller: controleur,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      hintText: 'Search',
+                      hintStyle: TextStyle(
+                        color: Colors.white,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    onFieldSubmitted: (r) {
+                      datas.forSearch();
+                      setState(() {
+                        datas.articleQuery = r;
+                        text =
+                            "Your search for: ${datas.articleQuery.toUpperCase()}";
+                      });
+                    },
+                  ),
+                  centerTitle: true,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.cancel),
+                      onPressed: () => setState(() {
+                        controleur.clear();
+                        searchClicked = !searchClicked;
+                        datas.articleQuery = "machine%20learning";
+                      }),
+                    ),
+                  ],
+                )
+              : AppBar(
+                  actions: [
+                    if (page == 0)
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            searchClicked = !searchClicked;
+                          });
+                        },
+                        icon: Icon(Icons.search, color: Colors.white),
+                      ),
+                  ],
+                  centerTitle: true,
+                  title: AppBarTitle(
+                    height: height,
+                  ), // Utilisation du composant AppBarTitle pour afficher le titre de l'application
+                ),
           body: page == 0
               ? Column(
                   children: [
-                    const ArticleSelection(), // Affichage de la sélection d'articles
+                    searchClicked == true && text.isNotEmpty
+                        ? Card(
+                            color: kBackgroundColor,
+                            child: Center(
+                              child: Text(
+                                text, // Affiche le texte du bouton
+                                style: TextStyle(
+                                  fontSize: height * 0.03, // Taille du texte
+                                  color: Colors
+                                      .white, // Couleur du texte en noir par défaut
+                                ),
+                              ),
+                            ),
+                          )
+                        : const ArticleSelection(), // Affichage de la sélection d'articles
                     Expanded(
                       child: ListView.builder(
                         shrinkWrap: true,
@@ -94,7 +160,6 @@ class _HomeState extends State<Home> {
             initialActiveIndex: 0,
             onTap: (int i) => setState(() {
               page = i;
-              print("oooooooooooooo $page");
             }),
           ),
         );

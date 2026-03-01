@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vst/components/selected_button.dart'; // Importe le widget SelectedButton
+import 'package:vst/const.dart';
 import 'package:vst/services/datas.dart'; // Importe la classe Datas qui contient les données
 
 // Ce widget ArticleSelection affiche des boutons pour sélectionner différentes catégories d'articles.
@@ -17,6 +18,7 @@ class ArticleSelection extends StatelessWidget {
     return Consumer<Datas>(
       // Écouteur de changements sur la classe Datas
       builder: (context, datas, child) => Card(
+        color: kBackgroundColor,
         // Crée une carte pour afficher les boutons de sélection
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -51,8 +53,8 @@ class ArticleSelection extends StatelessWidget {
                         .forNlp(); // Appelle la méthode forPyton de la classe Datas
                   },
                   text: "NLP",
-                  isSelected: datas
-                      .isNlp, // Vérifie si la catégorie est sélectionnée
+                  isSelected:
+                      datas.isNlp, // Vérifie si la catégorie est sélectionnée
                 ),
               ],
             ),
@@ -66,8 +68,8 @@ class ArticleSelection extends StatelessWidget {
                         .forComputerVsion(); // Appelle la méthode forReact de la classe Datas
                   },
                   text: "Computer Vision",
-                  isSelected:
-                      datas.isComputerVision, // Vérifie si la catégorie est sélectionnée
+                  isSelected: datas
+                      .isComputerVision, // Vérifie si la catégorie est sélectionnée
                 ),
               ],
             ),

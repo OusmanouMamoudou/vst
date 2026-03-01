@@ -5,6 +5,12 @@ import 'package:vst/models/youtube.dart'; // Importation du modèle YouTube
 import 'package:vst/services/network_helper.dart'; // Importation de l'aide réseau
 
 class Datas extends ChangeNotifier {
+  // articleQuery pour pouvoir acceder à ça de partout
+  String articleQuery = "machine%20learning";
+
+  // Fonction pour récupérer les articles depuis l'API de News
+  List<Article> articles = [];
+
   // Sélection des booléens pour filtrer les articles
   bool isMostViewed = true,
       isMostRecent = false,
@@ -13,180 +19,8 @@ class Datas extends ChangeNotifier {
       isNlp = false,
       isComputerVision = false;
 
-  // articleQuery pour pouvoir acceder à ça de partout
-  String articleQuery = "machine%20learning";
-
-  // Fonctions pour filtrer les articles par différentes catégories
-  void forMostViewed() {
-    isMostViewed = true;
-    isMostRecent = false;
-    fetchVideos(); // Appel à la fonction pour récupérer les vidéos YouTube
-    notifyListeners(); // Notifier les auditeurs du changement
-  }
-
-  // Fonction pour filtrer les articles les plus récents
-  void forMostRecent() {
-    isMostViewed = false;
-    isMostRecent = true;
-    fetchVideos(); // Appel à la fonction pour récupérer les vidéos YouTube
-    notifyListeners(); // Notifier les auditeurs du changement
-  }
-
-  // Fonction pour filtrer les articles sur le développement web
-  void forGenerativeAI() {
-    // Sélection du filtre et appel à la fonction pour récupérer les articles
-    isGenerativeIa = true;
-    isMachineLearning = false;
-    isNlp = false;
-    isComputerVision = false;
-    fetchArticles();
-    notifyListeners(); // Notifier les auditeurs du changement
-  }
-
-  // Fonction pour filtrer les articles sur JavaScript
-  void forMachineLearning() {
-    // Sélection du filtre et appel à la fonction pour récupérer les articles
-    isMachineLearning = true;
-    isGenerativeIa = false;
-    isNlp = false;
-    isComputerVision = false;
-    fetchArticles();
-    notifyListeners(); // Notifier les auditeurs du changement
-  }
-
-  // Fonction pour filtrer les articles sur Python
-  void forNlp() {
-    // Sélection du filtre et appel à la fonction pour récupérer les articles
-    isMachineLearning = false;
-    isGenerativeIa = false;
-    isNlp = true;
-    isComputerVision = false;
-    fetchArticles();
-    notifyListeners(); // Notifier les auditeurs du changement
-  }
-
-  // Fonction pour filtrer les articles sur React
-  void forComputerVsion() {
-    // Sélection du filtre et appel à la fonction pour récupérer les articles
-    isMachineLearning = false;
-    isGenerativeIa = false;
-    isNlp = false;
-    isComputerVision = true;
-    fetchArticles();
-    notifyListeners(); // Notifier les auditeurs du changement
-  }
-
-  // Fonction pour filtrer les articles sur Node.js
-  void forNodeJs() {
-    // Sélection du filtre et appel à la fonction pour récupérer les articles
-    isMachineLearning = false;
-    isGenerativeIa = false;
-    isNlp = false;
-    isComputerVision = true;
-    fetchArticles();
-    notifyListeners(); // Notifier les auditeurs du changement
-  }
-
-  // Fonction pour filtrer les articles sur Django
-  void forDjango() {
-    // Sélection du filtre et appel à la fonction pour récupérer les articles
-    isMachineLearning = false;
-    isGenerativeIa = false;
-    isNlp = false;
-    isComputerVision = false;
-    fetchArticles();
-    notifyListeners(); // Notifier les auditeurs du changement
-  }
-
-  // Fonction pour récupérer les articles depuis l'API de News
-  List<Article> articles = [];
-  Future<void> fetchArticles() async {
-    // Définition de la requête en fonction du filtre sélectionné
-
-    if (isGenerativeIa) {
-      articleQuery = "generative%20artificial%20intelligence";
-    } else if (isNlp) {
-      articleQuery = "nlp";
-    } else if (isComputerVision) {
-      articleQuery = "computer%20vision";
-    } else {
-      articleQuery = "machine%20learning";
-    }
-
-    // Récupération des données depuis l'API de News
-    final data = await NetworkHelper(
-      'https://newsapi.org/v2/everything?q=$articleQuery&apiKey=$newsApiKey',
-    ).getData();
-
-    // Traitement des données récupérées
-    if (data['status'] == 'ok') {
-      articles.clear(); // Nettoyage de la liste d'articles
-      for (var item in data['articles']) {
-        articles.add(Article.fromJson(item)); // Ajout des articles à la liste
-        notifyListeners(); // Notifier les auditeurs du changement
-      }
-      notifyListeners(); // Notifier les auditeurs du changement
-    } else {
-      throw Exception('Failed to load data');
-    }
-  }
-
   // Fonction pour récupérer les vidéos YouTube depuis l'API YouTube
   List<Youtube> videos = [];
-  Future<void> fetchVideos() async {
-    int maxPages = 20; // Nombre maximal de pages à récupérer
-    String? nextPageToken; // Jeton de page suivante
-
-    String order = "viewCount"; // Ordre par défaut
-
-    if (isMostViewed) {
-      order = "viewCount"; // Si les vidéos les plus vues sont sélectionnées
-    } else {
-      order = "date"; // Sinon, les vidéos les plus récentes
-    }
-
-    // Boucle pour récupérer les vidéos à partir de plusieurs pages
-    for (int page = 0; page < maxPages; page++) {
-      final data = await NetworkHelper(
-        // Requête pour récupérer les vidéos
-        'https://youtube.googleapis.com/youtube/v3/search?part=snippet&order=$order&q=$articleQuery&key=$youtubeApiKey'
-        '${nextPageToken != null ? '&pageToken=$nextPageToken' : ''}',
-      ).getData();
-
-      print("icccccc $data");
-
-      // Traitement des données récupérées
-      if (data != null && data.containsKey('items')) {
-        videos.clear(); // Nettoyage de la liste de vidéos
-        final List<dynamic> items = data['items'];
-
-        // Parcours des éléments récupérés
-        for (var item in items) {
-          final snippet = item['snippet'];
-          final id = item['id'];
-
-          final youtube = Youtube(
-            title: snippet['title'],
-            publishedAt: snippet['publishedAt'],
-            desc: snippet['description'],
-            channelName: snippet['channelTitle'],
-            videoId: id['videoId'],
-          );
-
-          videos.add(youtube); // Ajout de la vidéo à la liste
-        }
-
-        notifyListeners(); // Notifier les auditeurs du changement
-      }
-
-      // Vérification de la présence d'une page suivante
-      if (data != null && data.containsKey('nextPageToken')) {
-        nextPageToken = data['nextPageToken'];
-      } else {
-        break; // Pas de page suivante disponible, sortir de la boucle
-      }
-    }
-  }
 
   // Liste de vidéos YouTube préchargées (à des fins de démonstration)
   List<Youtube> videosViews = [
@@ -249,4 +83,162 @@ class Datas extends ChangeNotifier {
       channelName: "Liora",
     ),
   ];
+
+  // Fonctions pour filtrer les articles par différentes catégories
+  void forMostViewed() {
+    isMostViewed = true;
+    isMostRecent = false;
+    fetchVideos(); // Appel à la fonction pour récupérer les vidéos YouTube
+    notifyListeners(); // Notifier les auditeurs du changement
+  }
+
+  // Fonction pour filtrer les articles les plus récents
+  void forMostRecent() {
+    isMostViewed = false;
+    isMostRecent = true;
+    fetchVideos(); // Appel à la fonction pour récupérer les vidéos YouTube
+    notifyListeners(); // Notifier les auditeurs du changement
+  }
+
+  // Fonction pour filtrer les articles sur le développement web
+  void forGenerativeAI() {
+    // Sélection du filtre et appel à la fonction pour récupérer les articles
+    isGenerativeIa = true;
+    isMachineLearning = false;
+    isNlp = false;
+    isComputerVision = false;
+    fetchArticles();
+    notifyListeners(); // Notifier les auditeurs du changement
+  }
+
+  // Fonction pour filtrer les articles sur JavaScript
+  void forMachineLearning() {
+    // Sélection du filtre et appel à la fonction pour récupérer les articles
+    isMachineLearning = true;
+    isGenerativeIa = false;
+    isNlp = false;
+    isComputerVision = false;
+    fetchArticles();
+    notifyListeners(); // Notifier les auditeurs du changement
+  }
+
+  // Fonction pour filtrer les articles sur Python
+  void forNlp() {
+    // Sélection du filtre et appel à la fonction pour récupérer les articles
+    isMachineLearning = false;
+    isGenerativeIa = false;
+    isNlp = true;
+    isComputerVision = false;
+    fetchArticles();
+    notifyListeners(); // Notifier les auditeurs du changement
+  }
+
+  // Fonction pour filtrer les articles sur React
+  void forComputerVsion() {
+    // Sélection du filtre et appel à la fonction pour récupérer les articles
+    isMachineLearning = false;
+    isGenerativeIa = false;
+    isNlp = false;
+    isComputerVision = true;
+    fetchArticles();
+    notifyListeners(); // Notifier les auditeurs du changement
+  }
+
+  // Fonction Pour deseactiver la selection
+  void forSearch() {
+    isMachineLearning = false;
+    isGenerativeIa = false;
+    isNlp = false;
+    isComputerVision = false;
+    fetchArticles();
+    notifyListeners(); // Notifier les auditeurs du changement
+  }
+
+  Future<void> fetchArticles() async {
+    // Définition de la requête en fonction du filtre sélectionné
+
+    if (isGenerativeIa) {
+      articleQuery = "generative%20artificial%20intelligence";
+    } else if (isNlp) {
+      articleQuery = "nlp";
+    } else if (isComputerVision) {
+      articleQuery = "computer%20vision";
+    } else if (isComputerVision) {
+      articleQuery = "machine%20learning";
+    } else {}
+
+    // Récupération des données depuis l'API de News
+    final data = await NetworkHelper(
+      'https://newsapi.org/v2/everything?q=$articleQuery&apiKey=$newsApiKey',
+    ).getData();
+
+    // Traitement des données récupérées
+    if (data['status'] == 'ok') {
+      articles.clear(); // Nettoyage de la liste d'articles
+      for (var item in data['articles']) {
+        articles.add(Article.fromJson(item)); // Ajout des articles à la liste
+        notifyListeners();
+        print("${articles} pppppppp");
+        // Notifier les auditeurs du changement
+      }
+      notifyListeners(); // Notifier les auditeurs du changement
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+
+  Future<void> fetchVideos() async {
+    int maxPages = 20; // Nombre maximal de pages à récupérer
+    String? nextPageToken; // Jeton de page suivante
+
+    String order = "viewCount"; // Ordre par défaut
+
+    if (isMostViewed) {
+      order = "viewCount"; // Si les vidéos les plus vues sont sélectionnées
+    } else {
+      order = "date"; // Sinon, les vidéos les plus récentes
+    }
+
+    // Boucle pour récupérer les vidéos à partir de plusieurs pages
+    for (int page = 0; page < maxPages; page++) {
+      final data = await NetworkHelper(
+        // Requête pour récupérer les vidéos
+        'https://youtube.googleapis.com/youtube/v3/search?part=snippet&order=$order&q=$articleQuery&key=$youtubeApiKey'
+        '${nextPageToken != null ? '&pageToken=$nextPageToken' : ''}',
+      ).getData();
+
+      print("icccccc $data");
+
+      // Traitement des données récupérées
+      if (data != null && data.containsKey('items')) {
+        videos.clear(); // Nettoyage de la liste de vidéos
+        final List<dynamic> items = data['items'];
+
+        // Parcours des éléments récupérés
+        for (var item in items) {
+          final snippet = item['snippet'];
+          final id = item['id'];
+
+          final youtube = Youtube(
+            title: snippet['title'],
+            publishedAt: snippet['publishedAt'],
+            desc: snippet['description'],
+            channelName: snippet['channelTitle'],
+            videoId: id['videoId'],
+          );
+
+          videos.add(youtube); // Ajout de la vidéo à la liste
+        }
+
+        notifyListeners(); // Notifier les auditeurs du changement
+      }
+
+      // Vérification de la présence d'une page suivante
+      if (data != null && data.containsKey('nextPageToken')) {
+        nextPageToken = data['nextPageToken'];
+      } else {
+        break; // Pas de page suivante disponible, sortir de la boucle
+      }
+    }
+  }
 }
